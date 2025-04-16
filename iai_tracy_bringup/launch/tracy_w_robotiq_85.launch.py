@@ -1,32 +1,23 @@
 import launch
+import os
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, LogInfo, PushRosNamespace
-from launch_ros.actions import Node
+from ament_index_python.packages import get_package_share_directory
+from launch.substitutions import Command, FindExecutable, LaunchConfiguration
+from launch.actions import DeclareLaunchArgument, LogInfo
+from launch_ros.actions import Node, PushRosNamespace
 from launch_ros.parameter_descriptions import Parameter
 
 def generate_launch_description():
-    # Define the arguments for the kinematics configuration files
-    kinematics_config_left = DeclareLaunchArgument(
-        'kinematics_config_left',
-        default_value='$(find iai_tracy_ur)/include/iai_tracy_ur/left_ur10e_calibration.yaml',
-        description='Path to the left arm kinematics configuration file'
-    )
 
-    kinematics_config_right = DeclareLaunchArgument(
-        'kinematics_config_right',
-        default_value='$(find iai_tracy_ur)/include/iai_tracy_ur/right_ur10e_calibration.yaml',
-        description='Path to the right arm kinematics configuration file'
-    )
+    kinematics_config_left = os.path.join(get_package_share_directory('iai_tracy_ur'),'include','iai_tracy_ur','left_ur10e_calibration.yaml')
+    kinematics_config_right = os.path.join(get_package_share_directory('iai_tracy_ur'),'include','iai_tracy_ur','right_ur10e_calibration.yaml')
 
     return LaunchDescription([
-        # Declare kinematics configuration arguments
-        kinematics_config_left,
-        kinematics_config_right,
 
         # Include the iai_tracy_description launch file
         Node(
             package='iai_tracy_description',
-            executable='upload.launch',
+            executable='display.launch.py',
             name='upload_description',
             parameters=[
                 {'kinematics_config_left': kinematics_config_left, 'kinematics_config_right': kinematics_config_right}
@@ -36,7 +27,7 @@ def generate_launch_description():
         # Include the ur_robot_driver for the left arm
         Node(
             package='ur_robot_driver',
-            executable='ur10e_bringup.launch',
+            executable='ur10e.launch.py',
             namespace='left_arm',
             arguments=[
                 'robot_ip:=192.168.102.154',
@@ -45,7 +36,7 @@ def generate_launch_description():
                 'controllers:=joint_state_controller_left scaled_pos_joint_traj_controller_left',
                 'stopped_controllers:=pos_joint_traj_controller_left',
                 'kinematics_config:=$(arg kinematics_config_left)',
-                'robot_description_file:=$(find iai_tracy_description)/launch/upload.launch',
+                'robot_description_file:=$(find iai_tracy_description)/launch/display.launch.py',
                 'reverse_port:=50011',
                 'script_sender_port:=50012',
                 'trajectory_port:=50013',
@@ -56,7 +47,7 @@ def generate_launch_description():
         # Include the ur_robot_driver for the right arm
         Node(
             package='ur_robot_driver',
-            executable='ur10e_bringup.launch',
+            executable='ur10e.launch.py',
             namespace='right_arm',
             arguments=[
                 'robot_ip:=192.168.102.153',
@@ -65,7 +56,7 @@ def generate_launch_description():
                 'controllers:=joint_state_controller_right scaled_pos_joint_traj_controller_right',
                 'stopped_controllers:=pos_joint_traj_controller_right',
                 'kinematics_config:=$(arg kinematics_config_right)',
-                'robot_description_file:=$(find iai_tracy_description)/launch/upload.launch',
+                'robot_description_file:=$(find iai_tracy_description)/launch/display.launch.py',
                 'reverse_port:=50001',
                 'script_sender_port:=50002',
                 'trajectory_port:=5003',

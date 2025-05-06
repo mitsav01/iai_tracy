@@ -1,59 +1,31 @@
 import os
+from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
-from launch.substitutions import Command, LaunchConfiguration, PathJoinSubstitution
+from launch.substitutions import Command, LaunchConfiguration, PathJoinSubstitution, FindExecutable
 from launch_ros.actions import Node
-from ament_index_python.packages import get_package_share_directory
-from launch.substitutions import FindExecutable
 
 
 def generate_launch_description():
+    # Package paths
+    desc_pkg = get_package_share_directory('iai_tracy_description')
+    ur_pkg = get_package_share_directory('iai_tracy_ur')
+    urdf_file = os.path.join(desc_pkg, 'urdf', 'tracy.urdf.xacro')
+    rviz_file = os.path.join(desc_pkg, 'rviz2', 'display.rviz')
+
+    # Kinematics file paths
+    l_kinematics_file = os.path.join(ur_pkg, 'include', 'iai_tracy_ur', 'left_ur10e_calibration.yaml')
+    r_kinematics_file = os.path.join(ur_pkg, 'include', 'iai_tracy_ur', 'right_ur10e_calibration.yaml')
+
     # Declare arguments
-    urdf_arg = DeclareLaunchArgument(
-        name='urdf',
-        default_value=os.path.join(
-            get_package_share_directory('iai_tracy_description'),
-            'urdf',
-            'tracy.urdf.xacro'
-        )
-    )
+    declared_args = [
+        DeclareLaunchArgument('urdf', default_value=urdf_file),
+        DeclareLaunchArgument('transmission_hw_interface', default_value='hardware_interface/PositionJointInterface'),
+        DeclareLaunchArgument('kinematics_config_left', default_value=l_kinematics_file),
+        DeclareLaunchArgument('kinematics_config_right', default_value=r_kinematics_file),
+    ]
 
-    transmission_hw_interface_arg = DeclareLaunchArgument(
-        name='transmission_hw_interface',
-        default_value='hardware_interface/PositionJointInterface'
-    )
-
-    kinematics_config_left_arg = DeclareLaunchArgument(
-        name='kinematics_config_left',
-        default_value=os.path.join(
-            get_package_share_directory('iai_tracy_ur'),
-            'include',
-            'iai_tracy_ur',
-            'left_ur10e_calibration.yaml'
-        )
-    )
-
-    kinematics_config_right_arg = DeclareLaunchArgument(
-        name='kinematics_config_right',
-        default_value=os.path.join(
-            get_package_share_directory('iai_tracy_ur'),
-            'include',
-            'iai_tracy_ur',
-            'right_ur10e_calibration.yaml'
-        )
-    )
-
-    kinematics_params_arg = DeclareLaunchArgument(
-        name='kinematics_params',
-        default_value=os.path.join(
-            get_package_share_directory('ur_description'),
-            'config',
-            'ur5',
-            'default_kinematics.yaml'
-        )
-    )
-
-    # Robot description using xacro + args
+    # Robot description from xacro
     robot_description_content = Command([
         PathJoinSubstitution([FindExecutable(name='xacro')]),
         ' ',
@@ -64,27 +36,13 @@ def generate_launch_description():
     ])
     robot_description = {'robot_description': robot_description_content}
 
-    # RViz config path
-    rviz_file = os.path.join(
-        get_package_share_directory('iai_tracy_description'),
-        'rviz2',
-        'display.rviz'
-    )
-
-    return LaunchDescription([
-        # Declare launch arguments
-        urdf_arg,
-        transmission_hw_interface_arg,
-        kinematics_config_left_arg,
-        kinematics_config_right_arg,
-        kinematics_params_arg,
-
-        # Nodes
+    # Nodes
+    nodes = [
         Node(
             package='robot_state_publisher',
             executable='robot_state_publisher',
             name='robot_state_publisher',
-            output='screen',
+            output='both',
             parameters=[robot_description]
         ),
         Node(
@@ -96,7 +54,9 @@ def generate_launch_description():
             package='rviz2',
             executable='rviz2',
             name='rviz2',
-            arguments=['-d', rviz_file],
-            output='log'
+            output='both',
+            arguments=['-d', rviz_file]
         )
-    ])
+    ]
+
+    return LaunchDescription(declared_args + nodes)

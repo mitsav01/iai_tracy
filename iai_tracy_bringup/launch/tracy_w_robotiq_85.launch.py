@@ -27,7 +27,7 @@ def generate_launch_description():
                 'controllers': 'joint_state_controller_left scaled_pos_joint_traj_controller_left',
                 'stopped_controllers': 'pos_joint_traj_controller_left',
                 'kinematics_config': kinematics_config_left,
-                'robot_description_file': os.path.join(iai_tracy_description, 'launch', 'display.launch.py'),
+                'robot_description_file': os.path.join(iai_tracy_description, 'launch', 'upload.launch.py'),
                 'reverse_port': '50011',
                 'script_sender_port': '50012',
                 'trajectory_port': '50013',
@@ -49,7 +49,7 @@ def generate_launch_description():
                 'controllers': 'joint_state_controller_right scaled_pos_joint_traj_controller_right',
                 'stopped_controllers': 'pos_joint_traj_controller_right',
                 'kinematics_config': kinematics_config_right,
-                'robot_description_file': os.path.join(iai_tracy_description, 'launch', 'display.launch.py'),
+                'robot_description_file': os.path.join(iai_tracy_description, 'launch', 'upload.launch.py'),
                 'reverse_port': '50001',
                 'script_sender_port': '50002',
                 'trajectory_port': '50003',
@@ -62,7 +62,7 @@ def generate_launch_description():
         # Upload robot description
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
-                os.path.join(iai_tracy_description, 'launch', 'display.launch.py')
+                os.path.join(iai_tracy_description, 'launch', 'upload.launch.py')
             ),
             launch_arguments={
                 'kinematics_config_left': kinematics_config_left,
@@ -75,14 +75,14 @@ def generate_launch_description():
 
         # Robotiq Gripper Drivers
         Node(
-            package='robotiq_2f_gripper_control',
+            package='ros2_robotiq_gripper',
             executable='Robotiq2FGripperRtuNode.py',
             name='right_gripper_driver',
             namespace='right_gripper',
             arguments=['/dev/ttyUSB0']
         ),
         Node(
-            package='robotiq_2f_gripper_control',
+            package='ros2_robotiq_gripper',
             executable='Robotiq2FGripperRtuNode.py',
             name='left_gripper_driver',
             namespace='left_gripper',
@@ -91,7 +91,7 @@ def generate_launch_description():
 
         # Gripper Action Servers
         Node(
-            package='robotiq_2f_gripper_action_server',
+            package='ros2_robotiq_gripper',
             executable='robotiq_2f_gripper_action_server_node',
             name='gripper_action_server_right',
             parameters=[{'gripper_name': 'right_gripper'}],
@@ -101,7 +101,7 @@ def generate_launch_description():
             ]
         ),
         Node(
-            package='robotiq_2f_gripper_action_server',
+            package='ros2_robotiq_gripper',
             executable='robotiq_2f_gripper_action_server_node',
             name='gripper_action_server_left',
             parameters=[{'gripper_name': 'left'}],

@@ -1,87 +1,95 @@
-import launch
 import os
 from launch import LaunchDescription
-from ament_index_python.packages import get_package_share_directory
-from launch.substitutions import Command, FindExecutable, LaunchConfiguration
-from launch.actions import DeclareLaunchArgument, LogInfo
+from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription, GroupAction
 from launch_ros.actions import Node, PushRosNamespace
-from launch_ros.parameter_descriptions import Parameter
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+from ament_index_python.packages import get_package_share_directory
+
 
 def generate_launch_description():
+    iai_tracy_ur = get_package_share_directory('iai_tracy_ur')
+    iai_tracy_description = get_package_share_directory('iai_tracy_description')
+    ur_robot_driver = get_package_share_directory('ur_robot_driver')
 
-    kinematics_config_left = os.path.join(get_package_share_directory('iai_tracy_ur'),'include','iai_tracy_ur','left_ur10e_calibration.yaml')
-    kinematics_config_right = os.path.join(get_package_share_directory('iai_tracy_ur'),'include','iai_tracy_ur','right_ur10e_calibration.yaml')
+    kinematics_config_left = os.path.join(iai_tracy_ur, 'include', 'iai_tracy_ur', 'left_ur10e_calibration.yaml')
+    kinematics_config_right = os.path.join(iai_tracy_ur, 'include', 'iai_tracy_ur', 'right_ur10e_calibration.yaml')
 
-    return LaunchDescription([
+    left_arm = GroupAction([
+        PushRosNamespace('left_arm'),
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                os.path.join(ur_robot_driver, 'launch', 'ur10e.launch.py')
+            ),
+            launch_arguments={
+                'robot_ip': '192.168.102.154',
+                'tf_prefix': 'left_',
+                'controller_config_file': os.path.join(iai_tracy_ur, 'config', 'ur10e_controllers_left.yaml'),
+                'controllers': 'joint_state_controller_left scaled_pos_joint_traj_controller_left',
+                'stopped_controllers': 'pos_joint_traj_controller_left',
+                'kinematics_config': kinematics_config_left,
+                'robot_description_file': os.path.join(iai_tracy_description, 'launch', 'display.launch.py'),
+                'reverse_port': '50011',
+                'script_sender_port': '50012',
+                'trajectory_port': '50013',
+                'script_command_port': '50014'
+            }.items()
+        )
+    ])
 
-        # Include the iai_tracy_description launch file
-        Node(
-            package='iai_tracy_description',
-            executable='display.launch.py',
-            name='upload_description',
-            parameters=[
-                {'kinematics_config_left': kinematics_config_left, 'kinematics_config_right': kinematics_config_right}
-            ]
+    right_arm = GroupAction([
+        PushRosNamespace('right_arm'),
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                os.path.join(ur_robot_driver, 'launch', 'ur10e.launch.py')
+            ),
+            launch_arguments={
+                'robot_ip': '192.168.102.153',
+                'tf_prefix': 'right_',
+                'controller_config_file': os.path.join(iai_tracy_ur, 'config', 'ur10e_controllers_right.yaml'),
+                'controllers': 'joint_state_controller_right scaled_pos_joint_traj_controller_right',
+                'stopped_controllers': 'pos_joint_traj_controller_right',
+                'kinematics_config': kinematics_config_right,
+                'robot_description_file': os.path.join(iai_tracy_description, 'launch', 'display.launch.py'),
+                'reverse_port': '50001',
+                'script_sender_port': '50002',
+                'trajectory_port': '50003',
+                'script_command_port': '50005'
+            }.items()
+        )
+    ])
+
+    nodes = [
+        # Upload robot description
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                os.path.join(iai_tracy_description, 'launch', 'display.launch.py')
+            ),
+            launch_arguments={
+                'kinematics_config_left': kinematics_config_left,
+                'kinematics_config_right': kinematics_config_right
+            }.items()
         ),
-        
-        # Include the ur_robot_driver for the left arm
-        Node(
-            package='ur_robot_driver',
-            executable='ur10e.launch.py',
-            namespace='left_arm',
-            arguments=[
-                'robot_ip:=192.168.102.154',
-                'tf_prefix:=left_',
-                'controller_config_file:=$(find iai_tracy_ur)/config/ur10e_controllers_left.yaml',
-                'controllers:=joint_state_controller_left scaled_pos_joint_traj_controller_left',
-                'stopped_controllers:=pos_joint_traj_controller_left',
-                'kinematics_config:=$(arg kinematics_config_left)',
-                'robot_description_file:=$(find iai_tracy_description)/launch/display.launch.py',
-                'reverse_port:=50011',
-                'script_sender_port:=50012',
-                'trajectory_port:=50013',
-                'script_command_port:=50014'
-            ]
-        ),
-        
-        # Include the ur_robot_driver for the right arm
-        Node(
-            package='ur_robot_driver',
-            executable='ur10e.launch.py',
-            namespace='right_arm',
-            arguments=[
-                'robot_ip:=192.168.102.153',
-                'tf_prefix:=right_',
-                'controller_config_file:=$(find iai_tracy_ur)/config/ur10e_controllers_right.yaml',
-                'controllers:=joint_state_controller_right scaled_pos_joint_traj_controller_right',
-                'stopped_controllers:=pos_joint_traj_controller_right',
-                'kinematics_config:=$(arg kinematics_config_right)',
-                'robot_description_file:=$(find iai_tracy_description)/launch/display.launch.py',
-                'reverse_port:=50001',
-                'script_sender_port:=50002',
-                'trajectory_port:=5003',
-                'script_command_port:=50005'
-            ]
-        ),
 
-        # Gripper nodes for the right and left grippers
+        left_arm,
+        right_arm,
+
+        # Robotiq Gripper Drivers
         Node(
             package='robotiq_2f_gripper_control',
             executable='Robotiq2FGripperRtuNode.py',
             name='right_gripper_driver',
-            arguments=['/dev/ttyUSB0'],
-            namespace='right_gripper'
+            namespace='right_gripper',
+            arguments=['/dev/ttyUSB0']
         ),
-        
         Node(
             package='robotiq_2f_gripper_control',
             executable='Robotiq2FGripperRtuNode.py',
             name='left_gripper_driver',
-            arguments=['/dev/ttyUSB1'],
-            namespace='left_gripper'
+            namespace='left_gripper',
+            arguments=['/dev/ttyUSB1']
         ),
 
-        # Gripper action server nodes
+        # Gripper Action Servers
         Node(
             package='robotiq_2f_gripper_action_server',
             executable='robotiq_2f_gripper_action_server_node',
@@ -92,7 +100,6 @@ def generate_launch_description():
                 ('output', '/right_gripper/Robotiq2FGripperRobotOutput')
             ]
         ),
-
         Node(
             package='robotiq_2f_gripper_action_server',
             executable='robotiq_2f_gripper_action_server_node',
@@ -104,24 +111,26 @@ def generate_launch_description():
             ]
         ),
 
-        # Joint state publisher
+        # Joint State Publisher
         Node(
             package='joint_state_publisher',
             executable='joint_state_publisher',
             name='joint_state_publisher',
+            output='screen',
             parameters=[{
                 'source_list': ['/left_arm/joint_states', '/right_arm/joint_states'],
                 'rate': 120,
                 'use_gui': False
-            }],
-            output='screen'
+            }]
         ),
 
-        # Robot state publisher
+        # Robot State Publisher
         Node(
             package='robot_state_publisher',
             executable='robot_state_publisher',
             name='robot_state_publisher',
             output='screen'
-        ),
-    ])
+        )
+    ]
+
+    return LaunchDescription(nodes)

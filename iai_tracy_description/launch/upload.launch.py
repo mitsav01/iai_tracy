@@ -36,5 +36,12 @@ def generate_launch_description():
     robot_description = {'robot_description': robot_description_content}
 
 
+    return LaunchDescription(declared_args + [
+    Node(
+        package='robot_state_publisher',
+        executable='robot_state_publisher',
+        name='robot_state_publisher',
+        parameters=[robot_description]
+    ),
+    ])
 
-    return LaunchDescription(declared_args, robot_description)

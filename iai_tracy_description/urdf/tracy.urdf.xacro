@@ -8,8 +8,8 @@
     <!-- <xacro:include filename="$(find robotiq_2f_85_gripper_visualization)/urdf/robotiq_arg2f_85_model_macro.xacro" /> -->
 
     <xacro:arg name="transmission_hw_interface" default="hardware_interface/PositionJointInterface"/>
-    <xacro:arg name="kinematics_config_left" default=""/>
-    <xacro:arg name="kinematics_config_right" default=""/>
+    <xacro:arg name="kinematics_config_left" default="$(find iai_tracy_ur)/include/iai_tracy_ur/left_ur10e_calibration.yaml" />
+    <xacro:arg name="kinematics_config_right" default="$(find iai_tracy_ur)/include/iai_tracy_ur/right_ur10e_calibration.yaml"/>
     <xacro:property name="M_PI" value="3.1415926535897931"/>
 
     <link name="world" />
@@ -153,6 +153,8 @@
      safety_pos_margin="0.15"
      safety_k_position="20"
      force_abs_paths="false"
+     transmission_hw_interface="$(arg transmission_hw_interface)"
+
      >
      <origin xyz="0 0 0" rpy="0 0 ${M_PI}" />  
    </xacro:ur_robot>

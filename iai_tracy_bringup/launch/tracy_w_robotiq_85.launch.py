@@ -188,6 +188,9 @@ def generate_launch_description():
                           'trajectory_port': left_trajectory_port,
                           'reverse_port': left_reverse_port,
                           'script_sender_port': left_script_sender_port,
+                          'kinematic_params': left_kinematic_config,
+                          'description_file': description_launch_file,
+
                           }.items())
     
     left_with_namespace = GroupAction(
@@ -207,6 +210,9 @@ def generate_launch_description():
                           'trajectory_port': right_trajectory_port,
                           'reverse_port': right_reverse_port,
                           'script_sender_port': right_script_sender_port,
+                          'kinematic_params': right_kinematic_config,
+                          'description_file': description_launch_file,
+                                                    
                           }.items())
     
     right_with_namespace = GroupAction(
@@ -221,20 +227,31 @@ def generate_launch_description():
 
     return LaunchDescription([
         ur_type_arg,
+        description_launch_file_arg,
         left_robot_ip_arg,
         left_controller_config_file_arg,
         left_tf_prefix_arg,
+        left_controllers_arg,
+        left_stopped_controllers_arg,
+        left_kinematic_config_arg,
         left_script_command_port_arg,
         left_trajectory_port_arg,
         left_reverse_port_arg,
         left_script_sender_port_arg,
+
+
         right_robot_ip_arg,
         right_controller_config_file_arg,
         right_tf_prefix_arg,
+        right_controllers_arg,
+        right_stopped_controllers_arg,
+        right_kinematic_config_arg,
         right_script_command_port_arg,
         right_trajectory_port_arg,
         right_reverse_port_arg,
         right_script_sender_port_arg,
+
+
         left_with_namespace,
         right_with_namespace,
         # description_launch_file_arg

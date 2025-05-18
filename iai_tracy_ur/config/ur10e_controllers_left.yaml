@@ -14,23 +14,23 @@ ur_hardware_interface:
 
 # Publish all joint states ----------------------------------
 joint_state_controller_left:
-   type:         joint_state_controller/JointStateController
+   type:         joint_state_broadcaster/JointStateBroadcaster
    publish_rate: *loop_hz
 
 # Publish wrench ----------------------------------
 force_torque_sensor_controller_left:
-   type:         force_torque_sensor_controller/ForceTorqueSensorController
+   type:         force_torque_sensor_broadcaster/ForceTorqueSensorBroadcaster
    publish_rate: *loop_hz
 
 # Publish speed_scaling factor
 speed_scaling_state_controller_left:
-   type:         scaled_controllers/SpeedScalingStateController
+   type:         ur_controllers/SpeedScalingStateBroadcaster
    publish_rate: *loop_hz
 
 # Joint Trajectory Controller - position based -------------------------------
 # For detailed explanations of parameter see http://wiki.ros.org/joint_trajectory_controller
 scaled_pos_joint_traj_controller_left:
-   type: position_controllers/ScaledJointTrajectoryController
+   type: ur_controllers/ScaledJointTrajectoryController
    joints: *robot_joints
    constraints:
       goal_time: 0.6
@@ -46,7 +46,7 @@ scaled_pos_joint_traj_controller_left:
    action_monitor_rate: 20
 
 pos_joint_traj_controller_left:
-   type: position_controllers/JointTrajectoryController
+   type: joint_trajectory_controller/JointTrajectoryController
    joints: *robot_joints
    constraints:
       goal_time: 0.6
@@ -62,7 +62,7 @@ pos_joint_traj_controller_left:
    action_monitor_rate: 20
 
 scaled_vel_joint_traj_controller_left:
-   type: velocity_controllers/ScaledJointTrajectoryController
+   type: ur_controllers/ScaledJointTrajectoryController
    joints: *robot_joints
    constraints:
       goal_time: 0.6
@@ -94,7 +94,7 @@ scaled_vel_joint_traj_controller_left:
    action_monitor_rate: 20
 
 vel_joint_traj_controller_left:
-   type: velocity_controllers/JointTrajectoryController
+   type: joint_trajectory_controller/JointTrajectoryController
    joints: *robot_joints
    constraints:
       goal_time: 0.6

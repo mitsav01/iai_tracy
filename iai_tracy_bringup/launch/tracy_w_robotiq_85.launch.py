@@ -31,7 +31,7 @@ def generate_launch_description():
     )
 
     description_launch_fl = PathJoinSubstitution(
-        [FindPackageShare("iai_tracy_description"),"launch","display.launch.py"]
+        [FindPackageShare("iai_tracy_description"),"urdf","tracy.urdf.xacro"]
     )
 
     ur_type = LaunchConfiguration('ur_type') 
@@ -152,7 +152,7 @@ def generate_launch_description():
         default_value="pos_joint_traj_controller_right",
     )
     right_kinematic_config_arg = DeclareLaunchArgument(
-        "right_linematic_config",
+        "right_kinematic_config",
         default_value=right_kinematics_params,
     )
     right_reverse_port_arg = DeclareLaunchArgument(
@@ -189,7 +189,7 @@ def generate_launch_description():
                           'reverse_port': left_reverse_port,
                           'script_sender_port': left_script_sender_port,
                           'kinematic_params': left_kinematic_config,
-                          'description_file': description_launch_file,
+                        #   'description_file': description_launch_file,
 
                           }.items())
     
@@ -211,7 +211,7 @@ def generate_launch_description():
                           'reverse_port': right_reverse_port,
                           'script_sender_port': right_script_sender_port,
                           'kinematic_params': right_kinematic_config,
-                          'description_file': description_launch_file,
+                        #   'description_file': description_launch_file,
                                                     
                           }.items())
     
@@ -227,7 +227,7 @@ def generate_launch_description():
 
     return LaunchDescription([
         ur_type_arg,
-        description_launch_file_arg,
+
         left_robot_ip_arg,
         left_controller_config_file_arg,
         left_tf_prefix_arg,

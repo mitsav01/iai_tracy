@@ -7,7 +7,7 @@
     <xacro:include filename="$(find ur_description)/urdf/ur_macro.xacro"/>
     <!-- <xacro:include filename="$(find robotiq_2f_85_gripper_visualization)/urdf/robotiq_arg2f_85_model_macro.xacro" /> -->
 
-    <xacro:arg name="transmission_hw_interface" default="hardware_interface/PositionJointInterface"/>
+    <xacro:arg name="transmission_hw_interface" default=""/>
     <xacro:arg name="kinematics_config_left" default="$(find iai_tracy_ur)/include/iai_tracy_ur/left_ur10e_calibration.yaml" />
     <xacro:arg name="kinematics_config_right" default="$(find iai_tracy_ur)/include/iai_tracy_ur/right_ur10e_calibration.yaml"/>
     <xacro:property name="M_PI" value="3.1415926535897931"/>

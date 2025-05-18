@@ -6,9 +6,12 @@ project(iai_tracy_bringup)
 
 # Find dependencies
 find_package(ament_cmake REQUIRED)
+
 # Install directories (if there are specific resources to install)
 install(DIRECTORY launch
   DESTINATION share/${PROJECT_NAME}
 )
+
+ament_export_dependencies(${THIS_PACKAGE_INCLUDE_DEPENDS})
 
 ament_package()
